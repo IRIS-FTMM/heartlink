@@ -11,6 +11,7 @@ WORKDIR /app
 
 # 4. Copy file requirements dan install packages Python
 COPY requirements.txt .
+ENV MAX_JOBS=1
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Copy sisa kode aplikasi ke dalam container
