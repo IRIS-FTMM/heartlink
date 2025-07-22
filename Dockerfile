@@ -1,31 +1,27 @@
-# ---- Base Image ----
-FROM python:3.12-slim
+# 1. Gunakan base image Python yang lebih lengkap
+FROM python:3.12-bullseye
 
-# ---- Set Work Directory ----
-WORKDIR /app
-
-# ---- Install System Dependencies ----
-# Only what is needed for runtime + opencv-headless
+# 2. Instal system dependencies yang dibutuhkan oleh 'dlib'
 RUN apt-get update && apt-get install -y \
     build-essential \
-    g++ \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libgtk-3-dev \
-    cmake \
-    && rm -rf /var/lib/apt/lists/*
+    cmake
 
-# ---- Install Python Dependencies ----
-# Use --no-cache-dir and avoid COPYing models into image
+# 3. Set direktori kerja di dalam container
+WORKDIR /app
+
+# 4. Copy file requirements dan install packages Python
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# ---- Copy App Code (excluding large models) ----
+# 5. Copy sisa kode aplikasi ke dalam container
 COPY . .
 
-# ---- Set Environment Variables ----
-ENV PYTHONUNBUFFERED=1
+# 6. Jalankan migrasi database untuk membuat tabel
+# Pastikan DATABASE_URL sudah diatur di Railway Variables
+RUN flask db upgrade
 
-# ---- Default Command (adjust if needed) ----
+# 7. Expose port yang digunakan oleh Flask
+EXPOSE 5000
+
+# 8. Tentukan perintah untuk menjalankan aplikasi saat container start
 CMD ["python", "app.py"]
